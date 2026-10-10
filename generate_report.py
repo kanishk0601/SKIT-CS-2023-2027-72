@@ -36,41 +36,45 @@ DEPARTMENT_NAME = "Department of Computer Science & Engineering"
 
 # ------------------------------------------------------------- 
 
-def get_repo_info(): 
+def get_repo_info():
+    """Get the repository name and current branch."""
+    repo_name = "Project-Repository"
+    branch_name = "main"
 
-    """Extracts the exact repository name and branch reliably in GitHub Codespaces.""" 
+    try:
+        root_path = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            encoding="utf-8"
+        ).strip()
 
-    repo_name = "Project-Repository" 
+        repo_name = os.path.basename(root_path)
 
-    branch_name = "main" 
+    except Exception:
+        try:
+            remote_url = subprocess.check_output(
+                ["git", "config", "--get", "remote.origin.url"],
+                encoding="utf-8"
+            ).strip()
 
-    try: 
+            repo_name = (
+                remote_url.rstrip("/")
+                .split("/")[-1]
+                .replace(".git", "")
+            )
 
-        root_path = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], encoding='utf-8').strip() 
+        except Exception:
+            repo_name = os.path.basename(os.getcwd())
 
-        repo_name = os.path.basename(root_path) 
+    try:
+        branch_name = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            encoding="utf-8"
+        ).strip()
 
-    except Exception: 
+    except Exception:
+        pass
 
-        try: 
-
-            remote_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url'], encoding='utf-8').strip() 
-
-            repo_name = remote_url.rstrip('/').split('/')[-1].replace('.git', '') 
-
-        except Exception: 
-
-            repo_name = os.path.basename(os.getcwd()) 
-
-    try: 
-
-        branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], encoding='utf-8').strip() 
-
-    except Exception: 
-
-        pass 
-
-    return repo_name, branch_name 
+    return repo_name, branch_name
 
 def get_git_metrics(interval="weekly"): 
 
